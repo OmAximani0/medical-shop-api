@@ -4,11 +4,11 @@ from store.views import AddStoreView, GetAllStoreView, GetStoreView, UpdateStore
     StoresByMedicineView
 
 urlpatterns = [
-    path('addstores/', AddStoreView.as_view()),
-    path('getallstores/', GetAllStoreView.as_view()),
-    path('getstores/', GetStoreView.as_view()),
-    path('updatestores/', UpdateStoreView.as_view()),
-    path('deletestores/', DeleteStoreView.as_view()),
+    path('add/', AddStoreView.as_view()),
+    path('all/', GetAllStoreView.as_view()),
+    path('get/', GetStoreView.as_view()),
+    path('update/', UpdateStoreView.as_view()),
+    path('delete/', DeleteStoreView.as_view()),
 
-    path('getstoresbymedicine/', StoresByMedicineView.as_view()),
+    path('bymedicine/', StoresByMedicineView.as_view()),
 ]
