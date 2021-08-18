@@ -3,153 +3,117 @@ from django.http import JsonResponse
 import json
 from medicine.models import Medicine, StoreMedicine
 from store.models import Store
-from uuid import uuid4
+from rest_framework import status
+from rest_framework.response import Response
+
+from .serializer import MedicineSerializer, StoreMedicineSerializer, NestedStoreMedicineSerializer
 
 
 # add medicine
 class AddMedicineView(GenericAPIView):
     def post(self, requests):
         try:
-            requests = json.load(requests)
-            medicines = requests.get("medicines")
-            for medicine in medicines:
-                medicine_id = uuid4()
-                medicine_name = medicine["medicine_name"]
-                new_medicine = Medicine(medicine_id=medicine_id, medicine_name=medicine_name)
-                new_medicine.save()
-
-            response = {
-                "message": "medicine created successfully"
-            }
+            response = {}
+            serializer = MedicineSerializer(data=requests.data)
+            if serializer.is_valid(raise_exception=True):
+                serializer.save()
+                response['msg'] = 'Medicine added successfully'
+                return Response(response, status=status.HTTP_200_OK)
         except Exception as e:
             print(e)
-            response = {"error": str(e)}
-        return JsonResponse(response)
+            response["msg"] = str(e)
+        return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
 
 # get all medicines
 class GetAllMedicineView(GenericAPIView):
     def post(self, requests):
         try:
-            data = []
-            medicines = Medicine.objects.all()
-            for medicine in medicines:
-                data.append({
-                    "medicine_id": medicine.medicine_id,
-                    "medicine_name": medicine.medicine_name,
-                })
-            response = {
-                "data": data
-            }
+            response = {}
+            instance = Medicine.objects.all()
+            serializer = MedicineSerializer(instance, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as e:
             print(e)
-            response = {"error": str(e)}
-        return JsonResponse(response)
+            response["msg"] = str(e)
+        return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
 
 # get medicine
 class GetMedicineView(GenericAPIView):
     def post(self, requests):
         try:
-            requests = json.load(requests)
-            medicines = requests.get("medicines")
-            data = []
-            for medicine_id in medicines:
-                medicine_obj = Medicine.objects.get(pk=medicine_id)
-                data.append({
-                    "medicine_id": medicine_obj.medicine_id,
-                    "medicine_name": medicine_obj.medicine_name
-                })
-            response = {
-                "data": data
-            }
+            response = {}
+            instacnce = Medicine.objects.get(pk=requests.data['medicine_id'])
+            serializer = MedicineSerializer(instacnce)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as e:
             print(e)
-            response = {"error": str(e)}
-        return JsonResponse(response)
+            response["msg"] = str(e)
+        return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
 
 # update medicine
 class UpdateMedicineView(GenericAPIView):
-    def post(self, requests):
+    def put(self, requests):
         try:
-            requests = json.load(requests)
-            medicines = requests.get("medicines")
-            for medicine in medicines:
-                Medicine.objects.filter(pk=medicine["medicine_id"]).update(**medicine["update"])
-            response = {
-                "message": "medicines updated successfully"
-            }
+            response = {}
+            instance = Medicine.objects.get(pk=requests.data['medicine_id'])
+            serializer = MedicineSerializer(instance, data=requests.data)
+            if serializer.is_valid(raise_exception=True):
+                serializer.save()
+                response['msg'] = 'Medicine updated successfully'
+                return Response(response, status=status.HTTP_200_OK)
         except Exception as e:
             print(e)
-            response = {"error": str(e)}
-        return JsonResponse(response)
+            response["msg"] = str(e)
+        return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
 
 # delete medicine
 class DeleteMedicineView(GenericAPIView):
     def post(self, requests):
         try:
-            requests = json.load(requests)
-            medicines = requests.get("medicines")
-            for medicine_id in medicines:
-                medicine = Medicine.objects.get(pk=medicine_id)
-                medicine.delete()
-            response = {
-                "message": "medicine deleted successfully"
-            }
+            response = {}
+            instance = Medicine.objects.filter(pk=requests.data['medicine_id'])
+            instance.delete()
+            response['msg'] = 'Medicine deleted successfully'
+            return Response(response, status=status.HTTP_200_OK)
         except Exception as e:
             print(e)
-            response = {"error": str(e)}
-        return JsonResponse(response)
+            response["msg"] = str(e)
+        return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
 
 # add store medicine
 class AddStoreMedicineView(GenericAPIView):
     def post(self, requests):
         try:
-            requests = json.load(requests)
-            store_medicines = requests.get("store_medicines")
-            for store_medicine in store_medicines:
-                store = Store.objects.get(pk=store_medicine["store_id"])
-                medicines = store_medicine["medicines"]
-                for medicine_obj in medicines:
-                    medicine = Medicine.objects.get(pk=medicine_obj["medicine_id"])
-                    new_store_medicine = StoreMedicine(store_id=store, medicine_id=medicine,
-                                                       quantity=medicine_obj["quantity"],
-                                                       price=medicine_obj["price"])
-                    new_store_medicine.save()
-            response = {
-                "message": "medicines added to stores successfully"
-            }
+            response = {}
+            serializer = StoreMedicineSerializer(data=requests.data)
+            if serializer.is_valid(raise_exception=True):
+                serializer.save()
+                response['msg'] = 'Medicine added successfully'
+                return Response(response, status=status.HTTP_200_OK)
+            response['msg'] = serializer.error_messages
+            return Response(response, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             print(e)
-            response = {"error": str(e)}
-        return JsonResponse(response)
+            response["error"] = str(e)
+        return Response(response , status=status.HTTP_400_BAD_REQUEST)
 
 
 # get store medicine
 class GetStoreMedicineView(GenericAPIView):
     def post(self, requests):
         try:
-            requests = json.load(requests)
-            stores = requests.get("stores")
-            data = dict()
-            for store_id in stores:
-                store = Store.objects.get(pk=store_id)
-                store_medicines = StoreMedicine.objects.filter(store_id=store)
-                data[store_id] = list()
-                for store_medicine in store_medicines:
-                    data[store_id].append({
-                        "medicine_id": store_medicine.medicine_id.medicine_id,
-                        "medicine_name": store_medicine.medicine_id.medicine_name,
-                        "quantity": store_medicine.quantity,
-                        "price": store_medicine.price
-                    })
-            response = data
+            response = {}
+            instance = StoreMedicine.objects.filter(medicine_id = requests.data.get('medicine_id'))
+            serializer = NestedStoreMedicineSerializer(instance, many=True)
+            return Response(serializer.data , status=status.HTTP_200_OK)
         except Exception as e:
             print(e)
-            response = {"error": str(e)}
+            response["error"] = str(e)
         return JsonResponse(response)
 
 

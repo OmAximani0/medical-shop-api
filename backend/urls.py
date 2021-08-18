@@ -7,5 +7,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     # User Endpoint
     path('user/', include('users.urls')),
-    path('store/', include('store.urls'))
+
+    path('store/', include('store.urls')),
+    path('medicine/', include('medicine.urls')),
+    path('storemedicine/', include('medicine.urls')),
 ]
