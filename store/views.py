@@ -1,13 +1,11 @@
 from rest_framework.generics import GenericAPIView
 from rest_framework.views import APIView
-from django.http import JsonResponse
-import json
 from rest_framework import status
 from store.models import Store
 from rest_framework.response import Response
-from medicine.models import Medicine, StoreMedicine
+from medicine.models import StoreMedicine
 from .serializer import StoreSerializer
-
+from medicine.serializer import NestedStoreMedicineSerializer
 
 # add store
 class AddStoreView(GenericAPIView):
@@ -105,24 +103,11 @@ class DeleteStoreView(APIView):
 class StoresByMedicineView(GenericAPIView):
     def post(self, requests):
         try:
-            requests = json.load(requests)
-            medicines = requests.get("medicines")
-            data = dict()
-            for medicine_id in medicines:
-                medicine = Medicine.objects.get(pk=medicine_id)
-                store_medicines = StoreMedicine.objects.filter(medicine_id=medicine, quantity__gte=1)
-                data[medicine_id] = list()
-                for store_medicine in store_medicines:
-                    data[medicine_id].append({
-                        "store_id": store_medicine.store_id.store_id,
-                        "store_name": store_medicine.store_id.store_name,
-                        "store_phone_number": store_medicine.store_id.store_phone_number,
-                        "store_address": store_medicine.store_id.store_address,
-                        "quantity": store_medicine.quantity,
-                        "price": store_medicine.price
-                    })
-            response = data
+            response = {}
+            instance = StoreMedicine.objects.filter(medicine_id = requests.data['medicine_id'], quantity__gte=1)
+            serializer = NestedStoreMedicineSerializer(instance, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as e:
             print(e)
-            response = {"error": str(e)}
-        return JsonResponse(response)
+            response["error"] = str(e)
+        return Response(response, status=status.HTTP_400_BAD_REQUEST)
