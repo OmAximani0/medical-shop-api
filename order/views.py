@@ -2,7 +2,7 @@ from rest_framework.generics import GenericAPIView
 from django.http import JsonResponse
 from rest_framework.response import Response
 import json
-
+from rest_framework import status
 from order.models import Order, OrderMedicine
 from medicine.models import Medicine, StoreMedicine
 from store.models import Store
@@ -10,8 +10,10 @@ from users.models import Users
 from uuid import uuid4
 from datetime import datetime
 from backend import settings
-
+from django.utils import timezone
 import stripe
+
+from medicine.serializer import StoreMedicineSerializer
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
@@ -20,12 +22,10 @@ stripe.api_key = settings.STRIPE_SECRET_KEY
 class AddOrderView(GenericAPIView):
     def post(self, requests):
         try:
-            requests = json.load(requests)
-            order_obj = requests.get("order")
-
-            user_id = order_obj["user_id"]
-            store_id = order_obj["store_id"]
-            medicines = order_obj["medicines"]
+            response = {}
+            user_id = requests.data["user_id"]
+            store_id = requests.data["store_id"]
+            medicines = requests.data["medicines"]
 
             can_place_order = True
             total_amount = 0
@@ -42,15 +42,11 @@ class AddOrderView(GenericAPIView):
 
             if can_place_order:
 
-                order_id = uuid4()
-                order_datetime = datetime.now()
-
                 user = Users.objects.get(pk=user_id)
-                new_order = Order(order_id=order_id, user_id=user, store_id=store,
-                                  order_datetime=order_datetime, total_amount=total_amount)
+                new_order = Order.objects.create(user_id=user, store_id=store, total_amount=total_amount)
                 new_order.save()
 
-                order = Order.objects.get(pk=order_id)
+                order = Order.objects.get(order_id=new_order.order_id)
                 for medicine_obj in medicines:
                     medicine = Medicine.objects.get(pk=medicine_obj["medicine_id"])
                     store_medicine = StoreMedicine.objects.get(store_id=store, medicine_id=medicine)
@@ -62,25 +58,23 @@ class AddOrderView(GenericAPIView):
                                                        order_quantity=medicine_obj["quantity"])
                     new_order_medicine.save()
 
-                total_amount = round(total_amount * 100)
+                total_amount = int(round(total_amount, 2) * 100)
+                print(total_amount)
                 customer = stripe.Customer.create(email=user.user_email)
                 intent = stripe.PaymentIntent.create(
                     amount=total_amount,
                     currency='inr',
                     customer=customer['id']
                 )
-                response = {
-                    'clientSecret': intent['client_secret'],
-                    'order_id': order.order_id
-                }
+                response['clientSecret'] = intent['client_secret']
+                response['order_id'] = order.order_id
+                return Response(response, status=status.HTTP_200_OK)
             else:
-                response = {
-                    "message": "order failed"
-                }
+                response['msg'] = "order failed"
         except Exception as e:
             print(e)
-            response = {"error": str(e)}
-        return JsonResponse(response)
+            response["error"] = str(e)
+        return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
 
 # order success
@@ -105,9 +99,11 @@ class OrderSuccessView(GenericAPIView):
 class OrderCancelView(GenericAPIView):
     def post(self, requests):
         try:
-            requests = json.load(requests)
+            response = {}
+            secret_size = requests.data['clientSecret'].index('_secret')
+            secert = requests.data['clientSecret'][:secret_size]
 
-            order_id = requests.get("order_id")
+            order_id = requests.data["order_id"]
             order = Order.objects.get(pk=order_id)
             store = Store.objects.get(pk=order.store_id.store_id)
             order_medicines = OrderMedicine.objects.filter(order_id=order)
@@ -118,16 +114,15 @@ class OrderCancelView(GenericAPIView):
                 available_quantity = store_medicine.quantity
                 new_quantity = available_quantity + refill_quantity
                 StoreMedicine.objects.filter(store_id=store, medicine_id=medicine).update(quantity=new_quantity)
-            Order.objects.filter(order_id=order_id).update(order_fulfilment_datetime=datetime.now(),
-                                                           order_fulfilment_status="cancelled")
+            Order.objects.filter(order_id=order_id).update(order_fulfilment_datetime=datetime.now(), order_fulfilment_status="cancelled")
+            stripe.PaymentIntent.cancel(secert)
+            response['msg'] = 'order cancelled successfully!'
 
-            response = Response({
-                "message": "order cancelled"
-            })
+            return Response(response, status=status.HTTP_200_OK)
         except Exception as e:
             print(e)
-            response = Response(status=500)
-        return response
+            response['error'] = str(e)
+        return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
 
 # get order

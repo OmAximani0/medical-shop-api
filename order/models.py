@@ -8,7 +8,7 @@ class Order(models.Model):
     order_id = models.AutoField(primary_key=True)
     user_id = models.ForeignKey(Users, on_delete=models.CASCADE)
     store_id = models.ForeignKey(Store, on_delete=models.CASCADE)
-    order_datetime = models.DateTimeField()
+    order_datetime = models.DateTimeField(auto_now_add=True, blank=True)
     order_fulfilment_datetime = models.DateTimeField(null=True)
     order_fulfilment_status = models.TextField(default="pending")
     total_amount = models.FloatField()

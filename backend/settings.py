@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -32,6 +33,7 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     'jet',
+    'corsheaders',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -49,6 +51,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -155,5 +158,11 @@ SIMPLE_JWT = {
     'USER_ID_FIELD': 'user_email'
 }
 
-STRIPE_WEBHOOK_SECRET = ""
-STRIPE_SECRET_KEY = ""
+STRIPE_WEBHOOK_SECRET = "whsec_qfrAVwfCygHxzB9ZAdFM7RlH4vF8cg9f"
+STRIPE_SECRET_KEY = "sk_test_51JPIxKSCWQ7TprZSy7rsI28YEQBMBHNdIr9sIatV5Zkpdgjp1F6PdVbtiCDQiKK6BynZY6DoDX4kby3CNnu3fLCE005wK83qTM"
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+
+CORS_ALLOW_ALL_ORIGINS = True
+ALLOWED_HOSTS = ['*']

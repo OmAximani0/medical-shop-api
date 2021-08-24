@@ -2,6 +2,7 @@ from rest_framework.generics import GenericAPIView
 from medicine.models import Medicine, StoreMedicine
 from rest_framework import status
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from .serializer import MedicineSerializer, StoreMedicineSerializer, NestedStoreMedicineSerializer
 
@@ -23,7 +24,7 @@ class AddMedicineView(GenericAPIView):
 
 
 # get all medicines
-class GetAllMedicineView(GenericAPIView):
+class GetAllMedicineView(APIView):
     def post(self, requests):
         try:
             response = {}
@@ -56,7 +57,7 @@ class UpdateMedicineView(GenericAPIView):
         try:
             response = {}
             instance = Medicine.objects.get(pk=requests.data['medicine_id'])
-            serializer = MedicineSerializer(instance, data=requests.data)
+            serializer = MedicineSerializer(instance, data=requests.data, partial=True)
             if serializer.is_valid(raise_exception=True):
                 serializer.save()
                 response['msg'] = 'Medicine updated successfully'
@@ -122,6 +123,7 @@ class UpdateStoreMedicineView(GenericAPIView):
             store_id = requests.data['store_id']
             medicine_id = requests.data['medicine_id']
             instance = StoreMedicine.objects.get(store_id=store_id, medicine_id=medicine_id)
+            requests.data['quantity'] += instance.quantity
             serializer = StoreMedicineSerializer(instance, data=requests.data, partial=True)
             if serializer.is_valid(raise_exception=True):
                 serializer.save()
