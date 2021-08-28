@@ -1,3 +1,4 @@
+from order.serializer import NestedOrderSerializer, NestedOrderMedicineSerializer, OrderSerializer
 from rest_framework.generics import GenericAPIView
 from django.http import JsonResponse
 from rest_framework.response import Response
@@ -10,7 +11,6 @@ from users.models import Users
 from uuid import uuid4
 from datetime import datetime
 from backend import settings
-from django.utils import timezone
 import stripe
 
 from medicine.serializer import StoreMedicineSerializer
@@ -26,6 +26,7 @@ class AddOrderView(GenericAPIView):
             user_id = requests.data["user_id"]
             store_id = requests.data["store_id"]
             medicines = requests.data["medicines"]
+            address = requests.data['address']
 
             can_place_order = True
             total_amount = 0
@@ -43,7 +44,7 @@ class AddOrderView(GenericAPIView):
             if can_place_order:
 
                 user = Users.objects.get(pk=user_id)
-                new_order = Order.objects.create(user_id=user, store_id=store, total_amount=total_amount)
+                new_order = Order.objects.create(user_id=user, store_id=store, total_amount=total_amount, address=address)
                 new_order.save()
 
                 order = Order.objects.get(order_id=new_order.order_id)
@@ -157,3 +158,51 @@ class GetOrderView(GenericAPIView):
             print(e)
             response = {"error": str(e)}
         return JsonResponse(response)
+
+class StoresAllOrderView(GenericAPIView):
+    def post(self, request):
+        try:
+            response = []
+            store_id = request.data['store_id']
+            order_instance = Order.objects.filter(store_id=store_id, is_delivered=False)
+            order_serializer = NestedOrderSerializer(order_instance, many=True)
+            temp_dict = {}
+            # Need to slice response
+            for data in order_serializer.data:
+                user = data['user_id']
+                temp_dict['order_id'] = data['order_id']
+                temp_dict['user_id'] = user['user_id']
+                temp_dict['user_email'] = user['user_email']
+                temp_dict['user_name'] = user['user_name']
+                temp_dict['order_datetime'] = data['order_datetime']
+                temp_dict['total_amount'] = data['total_amount']
+                temp_dict['address'] = data['address']
+                orderMedicine_instance = OrderMedicine.objects.filter(order_id = temp_dict['order_id'])
+                orderMedicine_serializer = NestedOrderMedicineSerializer(orderMedicine_instance, many=True)
+                for orderMedicine in orderMedicine_serializer.data:
+                    medicine_obj = orderMedicine['medicine_id']
+                    temp_dict['order_quantity'] = orderMedicine['order_quantity']
+                    temp_dict['medicine_name'] = medicine_obj['medicine_name']
+                response.append(temp_dict)
+                temp_dict = {}
+            return Response(response, status=status.HTTP_200_OK)
+        except Exception as e:
+            print(e)
+            response = {'msg': str(e)}
+        return Response(response, status=status.HTTP_400_BAD_REQUEST)
+
+class OrderDeliveredView(GenericAPIView):
+    def post(self, request):
+        try:
+            response = {}
+            instance = Order.objects.get(order_id=request.data['order_id'])
+            serializer = OrderSerializer(instance, data=request.data, partial=True)
+            if serializer.is_valid(raise_exception=True):
+                serializer.save()
+                response['msg'] = "Deliverd!"
+                return Response(response, status=status.HTTP_200_OK)
+            response['error'] = serializer.error_messages
+        except Exception as ex:
+            print(ex)
+            response['error'] = str(ex)
+        return Response(response, status=status.HTTP_400_BAD_REQUEST)

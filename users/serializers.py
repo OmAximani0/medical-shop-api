@@ -2,6 +2,9 @@ from rest_framework import serializers
 from .models import Users
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
+from store.serializer import StoreSerializer
+from store.models import Store
+
 class UserSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
@@ -27,5 +30,17 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         # Add extra responses here
         data['user_name'] = self.user.user_name
         data['user_email'] = self.user.user_email
-            
+        data['role'] = self.user.role_name
+        
+        if data['role'].lower() == "seller":
+            try:
+                user_id = self.user.user_id
+                instance = Store.objects.get(user_id=user_id)
+                print(instance)
+                serializer = StoreSerializer(instance)
+                print(serializer.data)
+                data['store_id'] = serializer.data.get('store_id')
+            except Exception as e:
+                print(e)
+
         return data 

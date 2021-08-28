@@ -12,6 +12,8 @@ class Order(models.Model):
     order_fulfilment_datetime = models.DateTimeField(null=True)
     order_fulfilment_status = models.TextField(default="pending")
     total_amount = models.FloatField()
+    address = models.TextField(default="")
+    is_delivered = models.BooleanField(default=False)
 
     class Meta: 
         db_table = 'order'

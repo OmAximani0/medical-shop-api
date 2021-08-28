@@ -6,12 +6,20 @@ from rest_framework.response import Response
 from medicine.models import StoreMedicine
 from .serializer import StoreSerializer
 from medicine.serializer import NestedStoreMedicineSerializer
+from users.models import Users
+from users.serializers import UserSerializer
 
 # add store
 class AddStoreView(GenericAPIView):
     def post(self, requests):
         try:
             response = {}
+            user_id = requests.data['user_id']
+            user_instance = Users.objects.get(pk=user_id)
+            user_serializer = UserSerializer(user_instance)
+            if user_serializer.data.get('role_name').lower() == "customer":
+                response['msg'] = 'Only Seller can create Store'
+                return Response(response, status=status.HTTP_400_BAD_REQUEST)
             serializer = StoreSerializer(data=requests.data)
             if serializer.is_valid(raise_exception=True):
                 serializer.save()

@@ -3,12 +3,21 @@ from medicine.models import Medicine, StoreMedicine
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.parsers import JSONParser, MultiPartParser, FormParser, FileUploadParser
 
 from .serializer import MedicineSerializer, StoreMedicineSerializer, NestedStoreMedicineSerializer
 
 
 # add medicine
 class AddMedicineView(GenericAPIView):
+
+    parser_classes = [
+        MultiPartParser,
+        FormParser,
+        FileUploadParser,
+        JSONParser,
+    ]
+
     def post(self, requests):
         try:
             response = {}
@@ -91,7 +100,7 @@ class AddStoreMedicineView(GenericAPIView):
             serializer = StoreMedicineSerializer(data=requests.data)
             if serializer.is_valid(raise_exception=True):
                 serializer.save()
-                response['msg'] = 'Medicine added successfully'
+                response['msg'] = 'Medicine added to store successfully'
                 return Response(response, status=status.HTTP_200_OK)
             response['msg'] = serializer.error_messages
             return Response(response, status=status.HTTP_400_BAD_REQUEST)
@@ -123,7 +132,8 @@ class UpdateStoreMedicineView(GenericAPIView):
             store_id = requests.data['store_id']
             medicine_id = requests.data['medicine_id']
             instance = StoreMedicine.objects.get(store_id=store_id, medicine_id=medicine_id)
-            requests.data['quantity'] += instance.quantity
+            if 'quantity' in requests.data:
+                requests.data['quantity'] += instance.quantity
             serializer = StoreMedicineSerializer(instance, data=requests.data, partial=True)
             if serializer.is_valid(raise_exception=True):
                 serializer.save()

@@ -20,6 +20,8 @@ class StoreMedicine(models.Model):
     medicine_id = models.ForeignKey(Medicine, on_delete=models.CASCADE)
     quantity = models.IntegerField()
     price = models.FloatField()
+    mfg_date = models.DateField(null=True)
+    exp_date = models.DateField(null=True)
 
     class Meta:
         db_table = 'store_medicine'
