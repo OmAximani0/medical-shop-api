@@ -1,17 +1,20 @@
 from django.urls import path
 
 from medicine.views import AddMedicineView, GetAllMedicineView, GetMedicineView, UpdateMedicineView, DeleteMedicineView, \
-    AddStoreMedicineView, GetStoreMedicineView, UpdateStoreMedicineView, DeleteStoreMedicineView
+    AddStoreMedicineView, GetStoreMedicineView, UpdateStoreMedicineView, DeleteStoreMedicineView, AllStoreMedicine
 
 urlpatterns = [
-    path('addmedicines/', AddMedicineView.as_view()),
-    path('getallmedicines/', GetAllMedicineView.as_view()),
-    path('getmedicines/', GetMedicineView.as_view()),
-    path('updatemedicines/', UpdateMedicineView.as_view()),
-    path('deletemedicines/', DeleteMedicineView.as_view()),
+    # Medicine
+    path('add/', AddMedicineView.as_view()),
+    path('all/', GetAllMedicineView.as_view()),
+    path('get/', GetMedicineView.as_view()),
+    path('update/', UpdateMedicineView.as_view()),
+    path('delete/', DeleteMedicineView.as_view()),
 
-    path('addstoremedicines/', AddStoreMedicineView.as_view()),
-    path('getstoremedicines/', GetStoreMedicineView.as_view()),
-    path('updatestoremedicines/', UpdateStoreMedicineView.as_view()),
-    path('deletestoremedicines/', DeleteStoreMedicineView.as_view()),
+    # Store Medicine
+    path('addmedicine/', AddStoreMedicineView.as_view()),
+    path('allstoremedicine/',AllStoreMedicine.as_view()),
+    path('getmedicine/', GetStoreMedicineView.as_view()),
+    path('updatemedicine/', UpdateStoreMedicineView.as_view()),
+    path('deletemedicine/', DeleteStoreMedicineView.as_view()),
 ]

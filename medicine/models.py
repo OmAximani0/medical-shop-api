@@ -6,6 +6,7 @@ from store.models import Store
 class Medicine(models.Model):
     medicine_id = models.AutoField(primary_key=True)
     medicine_name = models.TextField(unique=True)
+    image = models.ImageField(upload_to='images/medicines', null=True)
 
     class Meta:
         db_table = 'medicine'
@@ -19,6 +20,8 @@ class StoreMedicine(models.Model):
     medicine_id = models.ForeignKey(Medicine, on_delete=models.CASCADE)
     quantity = models.IntegerField()
     price = models.FloatField()
+    mfg_date = models.DateField(null=True)
+    exp_date = models.DateField(null=True)
 
     class Meta:
         db_table = 'store_medicine'
