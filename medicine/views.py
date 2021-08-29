@@ -4,6 +4,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.parsers import JSONParser, MultiPartParser, FormParser, FileUploadParser
+from django.http.response import JsonResponse
 
 from .serializer import MedicineSerializer, StoreMedicineSerializer, NestedStoreMedicineSerializer
 
@@ -108,6 +109,31 @@ class AddStoreMedicineView(GenericAPIView):
             print(e)
             response["error"] = str(e)
         return Response(response , status=status.HTTP_400_BAD_REQUEST)
+
+
+# all store medicine
+
+class AllStoreMedicine(GenericAPIView):
+    def get(self, request):
+        try:
+            response = []
+            storemedicines = StoreMedicine.objects.all()
+            serializer = NestedStoreMedicineSerializer(storemedicines, many=True)
+            store_medicine_object = {}
+            for store_medicine in serializer.data:
+                store_medicine_object['store_name'] = store_medicine['store_id']['store_name']
+                store_medicine_object['medicine_name'] = store_medicine['medicine_id']['medicine_name']
+                store_medicine_object['store_phone'] = store_medicine['store_id']['store_phone_number']
+                store_medicine_object['medicine_image'] = str(store_medicine['medicine_id']['image'])
+                store_medicine_object['store_address'] = store_medicine['store_id']['store_address']
+                store_medicine_object['price'] = store_medicine['price']
+                response.append(store_medicine_object)
+                store_medicine_object = {}
+            return JsonResponse(response, safe=False, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            print(e)    
+            return JsonResponse(response,safe=False, status=status.HTTP_400_BAD_REQUEST)
 
 
 # get store medicine

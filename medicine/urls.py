@@ -1,7 +1,7 @@
 from django.urls import path
 
 from medicine.views import AddMedicineView, GetAllMedicineView, GetMedicineView, UpdateMedicineView, DeleteMedicineView, \
-    AddStoreMedicineView, GetStoreMedicineView, UpdateStoreMedicineView, DeleteStoreMedicineView
+    AddStoreMedicineView, GetStoreMedicineView, UpdateStoreMedicineView, DeleteStoreMedicineView, AllStoreMedicine
 
 urlpatterns = [
     # Medicine
@@ -13,6 +13,7 @@ urlpatterns = [
 
     # Store Medicine
     path('addmedicine/', AddStoreMedicineView.as_view()),
+    path('allstoremedicine/',AllStoreMedicine.as_view()),
     path('getmedicine/', GetStoreMedicineView.as_view()),
     path('updatemedicine/', UpdateStoreMedicineView.as_view()),
     path('deletemedicine/', DeleteStoreMedicineView.as_view()),
