@@ -1,4 +1,3 @@
-from rest_framework.generics import GenericAPIView
 from rest_framework.views import APIView
 from rest_framework import status
 from store.models import Store
@@ -10,7 +9,7 @@ from users.models import Users
 from users.serializers import UserSerializer
 
 # add store
-class AddStoreView(GenericAPIView):
+class AddStoreView(APIView):
     def post(self, requests):
         try:
             response = {}
@@ -33,7 +32,7 @@ class AddStoreView(GenericAPIView):
 
 
 # get all stores
-class GetAllStoreView(GenericAPIView):
+class GetAllStoreView(APIView):
     def post(self, requests):
         try:
             response = {}
@@ -46,7 +45,7 @@ class GetAllStoreView(GenericAPIView):
         return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
 # get store
-class GetStoreView(GenericAPIView):
+class GetStoreView(APIView):
     def post(self, requests):
         try:
             response = {}
@@ -108,7 +107,7 @@ class DeleteStoreView(APIView):
 
 
 # stores by medicine
-class StoresByMedicineView(GenericAPIView):
+class StoresByMedicineView(APIView):
     def post(self, requests):
         try:
             response = {}

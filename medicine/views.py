@@ -1,4 +1,3 @@
-from rest_framework.generics import GenericAPIView
 from medicine.models import Medicine, StoreMedicine
 from rest_framework import status
 from rest_framework.response import Response
@@ -10,7 +9,7 @@ from .serializer import MedicineSerializer, StoreMedicineSerializer, NestedStore
 
 
 # add medicine
-class AddMedicineView(GenericAPIView):
+class AddMedicineView(APIView):
 
     parser_classes = [
         MultiPartParser,
@@ -48,7 +47,7 @@ class GetAllMedicineView(APIView):
 
 
 # get medicine
-class GetMedicineView(GenericAPIView):
+class GetMedicineView(APIView):
     def post(self, requests):
         try:
             response = {}
@@ -62,7 +61,7 @@ class GetMedicineView(GenericAPIView):
 
 
 # update medicine
-class UpdateMedicineView(GenericAPIView):
+class UpdateMedicineView(APIView):
     def put(self, requests):
         try:
             response = {}
@@ -79,7 +78,7 @@ class UpdateMedicineView(GenericAPIView):
 
 
 # delete medicine
-class DeleteMedicineView(GenericAPIView):
+class DeleteMedicineView(APIView):
     def post(self, requests):
         try:
             response = {}
@@ -94,7 +93,7 @@ class DeleteMedicineView(GenericAPIView):
 
 
 # add store medicine
-class AddStoreMedicineView(GenericAPIView):
+class AddStoreMedicineView(APIView):
     def post(self, requests):
         try:
             response = {}
@@ -113,7 +112,7 @@ class AddStoreMedicineView(GenericAPIView):
 
 # all store medicine
 
-class AllStoreMedicine(GenericAPIView):
+class AllStoreMedicine(APIView):
     def get(self, request):
         try:
             response = []
@@ -137,7 +136,7 @@ class AllStoreMedicine(GenericAPIView):
 
 
 # get store medicine
-class GetStoreMedicineView(GenericAPIView):
+class GetStoreMedicineView(APIView):
     def post(self, requests):
         try:
             response = {}
@@ -151,7 +150,7 @@ class GetStoreMedicineView(GenericAPIView):
 
 
 # update store medicine
-class UpdateStoreMedicineView(GenericAPIView):
+class UpdateStoreMedicineView(APIView):
     def post(self, requests):
         try:
             response = {}
@@ -173,7 +172,7 @@ class UpdateStoreMedicineView(GenericAPIView):
         return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
 # delete store medicine
-class DeleteStoreMedicineView(GenericAPIView):
+class DeleteStoreMedicineView(APIView):
     def post(self, requests):
         try:
             response = {}

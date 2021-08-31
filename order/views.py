@@ -3,6 +3,7 @@ from rest_framework.generics import GenericAPIView
 from django.http import JsonResponse
 from rest_framework.response import Response
 import json
+from rest_framework.views import APIView
 from rest_framework import status
 from order.models import Order, OrderMedicine
 from medicine.models import Medicine, StoreMedicine
@@ -13,13 +14,11 @@ from datetime import datetime
 from backend import settings
 import stripe
 
-from medicine.serializer import StoreMedicineSerializer
-
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
 
 # add order
-class AddOrderView(GenericAPIView):
+class AddOrderView(APIView):
     def post(self, requests):
         try:
             response = {}
@@ -79,7 +78,7 @@ class AddOrderView(GenericAPIView):
 
 
 # order success
-class OrderSuccessView(GenericAPIView):
+class OrderSuccessView(APIView):
     def post(self, requests):
         try:
             requests = json.load(requests)
@@ -97,7 +96,7 @@ class OrderSuccessView(GenericAPIView):
 
 
 # order cancel view
-class OrderCancelView(GenericAPIView):
+class OrderCancelView(APIView):
     def post(self, requests):
         try:
             response = {}
@@ -127,7 +126,7 @@ class OrderCancelView(GenericAPIView):
 
 
 # get order
-class GetOrderView(GenericAPIView):
+class GetOrderView(APIView):
     def post(self, requests):
         try:
             requests = json.load(requests)
@@ -159,7 +158,7 @@ class GetOrderView(GenericAPIView):
             response = {"error": str(e)}
         return JsonResponse(response)
 
-class StoresAllOrderView(GenericAPIView):
+class StoresAllOrderView(APIView):
     def post(self, request):
         try:
             response = []
@@ -191,7 +190,7 @@ class StoresAllOrderView(GenericAPIView):
             response = {'msg': str(e)}
         return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
-class OrderDeliveredView(GenericAPIView):
+class OrderDeliveredView(APIView):
     def post(self, request):
         try:
             response = {}
