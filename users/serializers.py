@@ -31,14 +31,13 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         data['user_name'] = self.user.user_name
         data['user_email'] = self.user.user_email
         data['role'] = self.user.role_name
+        data['user_id'] = self.user.user_id
         
         if data['role'].lower() == "seller":
             try:
                 user_id = self.user.user_id
                 instance = Store.objects.get(user_id=user_id)
-                print(instance)
                 serializer = StoreSerializer(instance)
-                print(serializer.data)
                 data['store_id'] = serializer.data.get('store_id')
             except Exception as e:
                 print(e)

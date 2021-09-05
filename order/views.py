@@ -80,18 +80,40 @@ class AddOrderView(APIView):
 class OrderSuccessView(APIView):
     def post(self, requests):
         try:
+            response = {}
             requests = json.load(requests)
-            order_id = requests.get("order_id")
-            Order.objects.filter(order_id=order_id).update(order_fulfilment_datetime=datetime.now(),
-                                                           order_fulfilment_status="success")
+            order_id = requests["order_id"]
+            sliceIndex = requests['clientSecret'].index('_secret')
+            clientSecret = requests['clientSecret'][:sliceIndex]
 
-            response = Response({
-                "message": "payment done"
-            })
+            # Card For Payment
+            cardInstance = stripe.PaymentMethod.create(
+                type="card",
+                card={
+                    "number": requests['cardNumber'],
+                    "exp_month": requests['exp_month'],
+                    "exp_year": requests['exp_year'],
+                    "cvc": requests['cvv']
+                },
+                metadata={
+                    'cardHolderName': requests['cardHolderName'],
+                    'order_id': order_id
+                }
+            )
+            
+            # Make Payment 
+            payment = stripe.PaymentIntent.confirm(
+                clientSecret,
+                payment_method=cardInstance['id']
+            )
+            Order.objects.filter(order_id=order_id).update(order_fulfilment_datetime=datetime.now(), order_fulfilment_status="success")
+            response['msg'] = 'Payment Done Successfully!'
+            response['res'] = payment
+            return Response(response, status=status.HTTP_200_OK)
         except Exception as e:
             print(e)
-            response = Response(status=500)
-        return response
+            response['msg'] = str(e)
+        return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
 
 # order cancel view
