@@ -9,6 +9,6 @@ urlpatterns = [
     path('get/', GetStoreView.as_view()),
     path('update/', UpdateStoreView.as_view()),
     path('delete/', DeleteStoreView.as_view()),
-
     path('bymedicine/', StoresByMedicineView.as_view()),
+    # path('search/medicine/<>')
 ]

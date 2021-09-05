@@ -188,3 +188,32 @@ class DeleteStoreMedicineView(APIView):
             print(e)
             response["error"] = str(e)
         return Response(response, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+#search in which store medicine is available
+class SearchMedicine(APIView):
+    def post(self,requests):
+        response = []
+        medicine_name = requests.data["medicine_name"]
+        print(medicine_name)
+        try:
+            medicines = Medicine.objects.filter(medicine_name__contains=medicine_name)
+            medicine_ids = [medicine.medicine_id for medicine in medicines]
+            storemedicines = StoreMedicine.objects.filter(medicine_id__in=medicine_ids)
+            serializer = NestedStoreMedicineSerializer(storemedicines, many=True)
+            store_medicine_object = {}
+            for store_medicine in serializer.data:
+                    store_medicine_object['store_id'] = store_medicine['store_id']['store_id']
+                    store_medicine_object['store_name'] = store_medicine['store_id']['store_name']
+                    store_medicine_object['medicine_name'] = store_medicine['medicine_id']['medicine_name']
+                    store_medicine_object['store_phone'] = store_medicine['store_id']['store_phone_number']
+                    store_medicine_object['medicine_image'] = str(store_medicine['medicine_id']['image'])
+                    store_medicine_object['store_address'] = store_medicine['store_id']['store_address']
+                    store_medicine_object['price'] = store_medicine['price']
+                    response.append(store_medicine_object)
+                    store_medicine_object = {}
+            return JsonResponse(response, safe=False, status=status.HTTP_200_OK)  
+        except Exception as e:
+            print(e)
+            return JsonResponse(response, safe=False, status=status.HTTP_400_BAD_REQUEST)    
